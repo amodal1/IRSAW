@@ -2,13 +2,9 @@
 Intel RealSense Spatial Awareness Wearable 
 
 
-This project is about augmenting the sense of the visually impaired using a wearable which gives vibrotactile feedback 
-on the body to make them aware about their surroundings.  
-A depth camera is used to see what is in front of a person and the vibration motors on the body notify the person 
-about where the object is in the front based on what the camera sees. 
+This project is about augmenting spatial awareness. It was originally designed as a wearable to assist those with visual impairments to navigate cluttered spaces using a RealSense depth camera and vibrotactile feedback.
 
-
-#This branch of IRSAW has a lot of changes.
+#This branch of IRSAW significantly alters the original application architecture.
 
 The changes are listed below
 
