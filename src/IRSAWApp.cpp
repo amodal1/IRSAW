@@ -13,11 +13,6 @@
 
 #include <functional>
 
-//OSC
-#include "cinder/System.h"
-#include "OscSender.h"
-#include "OscListener.h"
-
 //OpenCV
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
@@ -29,12 +24,12 @@
 #include <thread>
 #include <algorithm>
 
-// for Winsock
+// for Bluetooth
 #include<stdio.h>
-#include<winsock2.h>
+//Bluetooth include (bluez?)
 
-#pragma comment(lib, "ws2_32.lib") //Winsock Library
 
+//realsense 
 #include <librealsense/rs.hpp>
 
 using namespace ci;
@@ -46,13 +41,7 @@ using namespace cv;
 class IRSAWApp : public App {
   public:
 
-	//Variables for holding OSC data
-	osc::Sender		oscStatusReturn;
-	osc::Listener 	oscListener;
-	std::string		host;
-	int 			sendingPort;
-
-	//variables used to convert the depth buffer visualize it.
+	//variables used to convert the depth buffer for visualizations
 	Channel16u		  mDepthChannel;
 	gl::Texture2dRef  mDepthTex;
 	int			mDepthW, mDepthH; // These variables store the height and depth of the raw depth buffer
@@ -186,15 +175,6 @@ class IRSAWApp : public App {
 	Rectf BLzone;
 	Rectf BRzone;
 
-	// Variables for Winsock
-	WSADATA wsa;
-	SOCKET master, new_socket, client_socket[30], s;
-	struct sockaddr_in server, address;
-	int max_clients, activity, addrlen, i;
-
-	//set of socket descriptors
-	fd_set readfds;
-	timeval waitTime; //  wait time for the server to wait for client connections
 
 	//For Cinder Params
 	params::InterfaceGlRef	mParams;
@@ -221,15 +201,6 @@ void IRSAWApp::keyDown(KeyEvent event)
 	// Pressing q will quit the program
 	if ((event.getChar() == 'q') || (event.getChar() == 'Q'))
 	{
-		closesocket(client_socket[TRPos]);
-		closesocket(client_socket[TCPos]);
-		closesocket(client_socket[TLPos]);
-		closesocket(client_socket[MRPos]);
-		closesocket(client_socket[MCPos]);
-		closesocket(client_socket[MLPos]);
-		closesocket(client_socket[BRPos]);
-		closesocket(client_socket[BLPos]);
-		WSACleanup();
 		quit();
 	}
 
@@ -279,16 +250,6 @@ void IRSAWApp::keyDown(KeyEvent event)
 void IRSAWApp::shutdown()
 {
 //destroy camera context here
-
-	closesocket(client_socket[TRPos]);
-	closesocket(client_socket[TCPos]);
-	closesocket(client_socket[TLPos]);
-	closesocket(client_socket[MRPos]);
-	closesocket(client_socket[MCPos]);
-	closesocket(client_socket[MLPos]);
-	closesocket(client_socket[BRPos]);
-	closesocket(client_socket[BLPos]);
-	WSACleanup();
 	quit();
 }
 
@@ -444,14 +405,6 @@ uint8_t IRSAWApp::clampToByte(float value, float min, float max) {
 
 void IRSAWApp::setup()
 {
-	//OSC Set-Up
-	oscListener.setup(3000);
-	sendingPort = 3001;
-	// assume the broadcast address is this machine's IP address but with 255 as the final value
-	// so to multicast from IP 192.168.1.100, the host should be 192.168.1.255
-	host = "192.168.0.255";
-	oscStatusReturn.setup(host, sendingPort, true);
-
 	// Initialize all the variables
 
 	verticalConfig = true;
@@ -482,10 +435,6 @@ void IRSAWApp::setup()
 	whichNumber[0] = 100;
 	clientNumber = 100;
 	recvResult = 0;
-
-	/*isVibrationOn[0] = 1;
-	isVibrationOnInt = 1;
-	recvResult = 0;*/
 
 	lightsON = 1;
 
@@ -544,48 +493,9 @@ void IRSAWApp::setup()
 	middleDetectionThreshold = 1500;
 	bottomDetectionThreshold = 1500;
 
-	//Winsock Server Initialization begins here. 
-	for (i = 0; i < 30; i++)
-	{
-		client_socket[i] = 0;
-	}
-	console() << "\nInitialising Winsock..." << std::endl;
+	//Initialize Bluetooth
 
-	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
-	{
-		console() << "Failed. Error Code : " << WSAGetLastError() << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	console() << "Initialised. \n" << std::endl;
-
-	//Create a socket
-	if ((master = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET)
-	{
-		console() << "Could not create socket : " << WSAGetLastError() << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	console() << "Socket Created.\n" << std::endl;
-
-	//Prepare the sockaddr_in structure
-	server.sin_family = AF_INET;
-	server.sin_addr.s_addr = INADDR_ANY;
-	server.sin_port = htons(5555);
-
-	//Bind
-	if (::bind(master, (struct sockaddr *)&server, sizeof(server)) == SOCKET_ERROR)
-	{
-		console() << "Bind failed : " << WSAGetLastError() << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	console() << "Bind Done\n" << std::endl;
-
-	//Listen to incoming connections
-	listen(master, 3);
-
-	//Accept and incoming connection
-	console() << "Waiting for incoming connections\n" << std::endl;
-	addrlen = sizeof(struct sockaddr_in);
-
+	//Check for RealSense camera and initialize
 	if (ctx.get_device_count() == 0) throw std::runtime_error("No device detected. Is it plugged in?");
 		dev = ctx.get_device(0);
 
@@ -613,120 +523,6 @@ void IRSAWApp::setup()
 
 void IRSAWApp::update()
 {
-
-	//OSC Send Status Update to Phone
-	osc::Message statusMessage;
-
-	statusMessage.setAddress("/SAW_Remote/allMotors");
-	areAllMotorsOn = (isTopOn && isMiddleOn && isBottomOn);
-	statusMessage.addIntArg(areAllMotorsOn ? 1 : 0);
-	oscStatusReturn.sendMessage(statusMessage);
-
-	osc::Message statusTopMessage;
-	statusTopMessage.setAddress("/SAW_Remote/topMotors");
-	statusTopMessage.addIntArg(isTopOn ? 1 : 0);
-	oscStatusReturn.sendMessage(statusTopMessage);
-
-	osc::Message statusMiddleMessage;
-	statusMiddleMessage.setAddress("/SAW_Remote/middleMotors");
-	statusMiddleMessage.addIntArg(isMiddleOn ? 1 : 0);
-	oscStatusReturn.sendMessage(statusMiddleMessage);
-
-	osc::Message statusBottomMessage;
-	statusBottomMessage.setAddress("/SAW_Remote/bottomMotors");
-	statusBottomMessage.addIntArg(isBottomOn ? 1 : 0);
-	oscStatusReturn.sendMessage(statusBottomMessage);
-
-	osc::Message statusTopRangeMessage;
-	statusTopRangeMessage.setAddress("/SAW_Remote/topRange");
-	statusTopRangeMessage.addIntArg(topDetectionThreshold);
-	oscStatusReturn.sendMessage(statusTopRangeMessage);
-
-	osc::Message statusMiddleRangeMessage;
-	statusMiddleRangeMessage.setAddress("/SAW_Remote/middleRange");
-	statusMiddleRangeMessage.addIntArg(middleDetectionThreshold);
-	oscStatusReturn.sendMessage(statusMiddleRangeMessage);
-
-	osc::Message statusBottomRangeMessage;
-	statusBottomRangeMessage.setAddress("/SAW_Remote/bottomRange");
-	statusBottomRangeMessage.addIntArg(bottomDetectionThreshold);
-	oscStatusReturn.sendMessage(statusBottomRangeMessage);
-
-	osc::Message statusPulsingMessage;
-	statusPulsingMessage.setAddress("/SAW_Remote/pulsingVibration");
-	statusPulsingMessage.addIntArg(isPulsingOn);
-	oscStatusReturn.sendMessage(statusPulsingMessage);
-
-
-	//OSC Update System from Phone App
-	while (oscListener.hasWaitingMessages()) {
-		osc::Message incomingMessage;
-		oscListener.getNextMessage(&incomingMessage);
-
-		//Console messages for received messages
-		console() << "New message received" << std::endl;
-		console() << "Address: " << incomingMessage.getAddress() << std::endl;
-		console() << "Num Arg: " << incomingMessage.getNumArgs() << std::endl;
-
-		//Parse incoming OSC messages and set motors on and off
-		for (int i = 0; i < statusMessage.getNumArgs(); i++) {
-			console() << "-- Argument " << i << std::endl;
-			console() << "---- type: " << incomingMessage.getArgTypeName(i) << std::endl;
-			if (statusMessage.getArgType(i) == osc::TYPE_INT32) {
-				try {
-					console() << "------ value: " << incomingMessage.getArgAsInt32(i, true) << std::endl;
-				}
-				catch (...) {
-					console() << "Exception reading argument as int32" << std::endl;
-				}
-			}
-			if (incomingMessage.getAddress() == "/SAW_Remote/allMotors") {
-				if ((incomingMessage.getArgAsInt32(i, true) == 1) != areAllMotorsOn) {
-					toggleAllMotors();
-				}
-			}
-			else if (incomingMessage.getAddress() == "/SAW_Remote/topMotors") {
-				if ((incomingMessage.getArgAsInt32(i, true) == 1) != isTopOn) {
-					toggleTopMotors();
-				}
-			}
-			else if (incomingMessage.getAddress() == "/SAW_Remote/middleMotors") {
-				if ((incomingMessage.getArgAsInt32(i, true) == 1) != isMiddleOn) {
-					toggleMiddleMotors();
-				}
-			}
-			else if (incomingMessage.getAddress() == "/SAW_Remote/bottomMotors") {
-				if ((incomingMessage.getArgAsInt32(i, true) == 1) != isBottomOn) {
-					toggleBottomMotors();
-				}
-			}
-			else if (incomingMessage.getAddress() == "/SAW_Remote/topRange") {
-				topDetectionThreshold = incomingMessage.getArgAsInt32(i, true);
-
-			}
-			else if (incomingMessage.getAddress() == "/SAW_Remote/middleRange") {
-				middleDetectionThreshold = incomingMessage.getArgAsInt32(i, true);
-
-			}
-			else if (incomingMessage.getAddress() == "/SAW_Remote/bottomRange") {
-				bottomDetectionThreshold = incomingMessage.getArgAsInt32(i, true);
-			}
-
-			else if (incomingMessage.getAddress() == "/SAW_Remote/pulsingVibration") {
-				if (incomingMessage.getArgAsInt32(i, true) == 1)
-				{
-					isPulsingOn = true;
-					isPulsingOnSent = false;
-				}
-				else
-				{
-					isPulsingOn = false;
-					isPulsingOnSent = false;
-				}
-			}
-		}
-	}
-
 	dev->wait_for_frames();
 	depth = (uint16_t *)(dev->get_frame_data(rs::stream::depth)); // dev ka locha hai
 
@@ -1120,124 +916,16 @@ void IRSAWApp::update()
 	cdv8 = (char)clampedPixel8;
 
 
-	//ACCEPTING SPARK CORE CONNECTIONS
+	//Accept Curie Connections 
 
-	//clear the socket fd set
-	FD_ZERO(&readfds);
 
-	//add master socket to fd set
-	FD_SET(master, &readfds);
-
-	//add child sockets to fd set
-	for (i = 0; i < max_clients; i++)
-	{
-		s = client_socket[i];
-		if (s > 0)
-		{
-			FD_SET(s, &readfds);
-		}
-	}
-	// console() << "before select\n" << std::endl;
-	//wait for an activity on any of the sockets, timeout is NULL , so wait indefinitely
-	activity = select(0, &readfds, NULL, NULL, &waitTime);
-	//console() << "after select\n" << std::endl;
-
-	if (activity == SOCKET_ERROR)
-	{
-		console() << "select call failed with error code : " << WSAGetLastError() << std::endl;
-		exit(EXIT_FAILURE);
-	}
-
-	//If something happened on the master socket , then its an incoming connection
-	if (FD_ISSET(master, &readfds))
-	{
-		console() << "Incoming connection\n" << std::endl;
-		if ((new_socket = accept(master, (struct sockaddr *)&address, (int *)&addrlen))<0)
-		{
-			perror("accept");
-			exit(EXIT_FAILURE);
-		}
-
-		//inform user of socket number - used in send and receive commands
-		console() << "New Connection , socket fd is " << new_socket << " , ip is : " << inet_ntoa(address.sin_addr) << " , Port : " << ntohs(address.sin_port) << std::endl;
-
-		//send new connection greeting message
-		if (send(new_socket, &lightsON, 1, 0))
-		{
-			perror("send failed");
-		}
-		console() << "Welcome message sent successfully\n" << std::endl;
-
-		if (recv(new_socket, whichNumber, 1, 0) != SOCKET_ERROR)
-		{
-			clientNumber = (int)whichNumber[0];
-		}
-		else
-		{
-			console() << "Recv error, unable to receive data from client" << std::endl;
-
-		}
-
-		//add new socket to array of sockets
-		for (i = 0; i < max_clients; i++)
-		{
-			if (client_socket[i] == 0)
-			{
-				client_socket[i] = new_socket;
-				console() << "Adding to list of sockets at index\n" << i << std::endl;
-
-				//store the location of the new client in the list to the position variables
-				if (clientNumber == 1)
-				{
-					TLPos = i;
-					console() << "This is Top Left Client\n" << std::endl;
-				}
-				else if (clientNumber == 2)
-				{
-					TCPos = i;
-					console() << "This is Top Center Client\n" << std::endl;
-				}
-				else if (clientNumber == 3)
-				{
-					TRPos = i;
-					console() << "This is Top Right Client\n" << std::endl;
-				}
-				else if (clientNumber == 4)
-				{
-					MLPos = i;
-					console() << "This is Middle Left Client\n" << std::endl;
-				}
-				else if (clientNumber == 5)
-				{
-					MCPos = i;
-					console() << "This is Middle Center Client\n" << std::endl;
-				}
-				else if (clientNumber == 6)
-				{
-					MRPos = i;
-					console() << "This is Middle Right Client\n" << std::endl;
-				}
-				else if (clientNumber == 7)
-				{
-					BLPos = i;
-					console() << "This is Bottom Left Client\n" << std::endl;
-				}
-				else if (clientNumber == 8)
-				{
-					BRPos = i;
-					console() << "This is Bottom Right Client\n" << std::endl;
-				}
-
-				break;
-			}
-		}
-	}
-
-	//SENDING SIGNALS TO THE SPECIFIC SPARK CORES
+	//Send signals to the Curies
 
 	//sending type of vibration signal to the motors
 
-	if (!isPulsingOnSent)
+	//Update this for BLUETOOTH 
+	
+	/*if (!isPulsingOnSent)
 	{
 		isPulsingOnSent = true;
 		if (isPulsingOn)
@@ -1307,7 +995,7 @@ void IRSAWApp::update()
 			s = client_socket[BRPos];
 			getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
 			send(s, &gradualOn, 1, 0);
-		}
+		} 
 	}
 
 	//for top left
@@ -1420,7 +1108,7 @@ void IRSAWApp::update()
 		s = client_socket[BRPos];
 		getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
 		send(s, &zero, 1, 0);
-	}
+	}*/
 }
 
 void IRSAWApp::draw()
