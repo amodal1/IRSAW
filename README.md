@@ -1,12 +1,11 @@
 # IRSAW
 Intel RealSense Spatial Awareness Wearable 
 
-
 This project is about augmenting spatial awareness. It was originally designed as a wearable to assist those with visual impairments to navigate cluttered spaces using a RealSense depth camera and vibrotactile feedback.
 
-#This branch of IRSAW significantly alters the original application architecture.
+This branch of IRSAW significantly alters the original application architecture.
 
-The changes are listed below
+#Architecture Changes
 
 1. Using the Open Source Intel RealSense Cross Platform API (librealsense) to capture camera data instead of the DCM and the SDK, you don’t need to install anything to use the camera now.
 
