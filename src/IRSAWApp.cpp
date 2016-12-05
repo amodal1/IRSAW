@@ -9,7 +9,7 @@
 #include "cinder/Surface.h"
 #include "cinder/Text.h"
 #include "cinder/Utilities.h"
-#include "cinder\CinderMath.h"
+#include "cinder/CinderMath.h"
 
 #include <functional>
 
@@ -429,9 +429,6 @@ void IRSAWApp::setup()
 
 	isVisualizerVisible = false;
 
-	waitTime.tv_sec = 0;
-	waitTime.tv_usec = 0;
-
 	whichNumber[0] = 100;
 	clientNumber = 100;
 	recvResult = 0;
@@ -486,7 +483,6 @@ void IRSAWApp::setup()
 	BRPos = 100;
 	//ClientPos = 100;
 
-	max_clients = 30; // maximum number of clients that can connect
 
 	//Initial detection Threshold is 2000mm
 	topDetectionThreshold = 1500;

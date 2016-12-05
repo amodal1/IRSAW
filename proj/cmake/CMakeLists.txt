@@ -12,3 +12,9 @@ ci_make_app(
 	SOURCES     ${APP_PATH}/src/IRSAWApp.cpp
 	CINDER_PATH ${CINDER_PATH}
 )
+
+#add_executable(IRSAWApp ${SOURCES})
+
+target_link_libraries(IRSAWApp realsense opencv_core opencv_highgui opencv_imgproc)
+
+
