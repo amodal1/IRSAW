@@ -1,0 +1,3 @@
+/home/cooksey/dev/projects/SAW/IRSAW/proj/cmake/build/CMakeFiles/edit_cache.dir
+/home/cooksey/dev/projects/SAW/IRSAW/proj/cmake/build/CMakeFiles/rebuild_cache.dir
+/home/cooksey/dev/projects/SAW/IRSAW/proj/cmake/build/CMakeFiles/IRSAWApp.dir
