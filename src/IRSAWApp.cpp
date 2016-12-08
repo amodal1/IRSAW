@@ -457,16 +457,16 @@ void IRSAWApp::setup()
 	mParams->addButton("Toggle Bottom Motors", std::bind(&IRSAWApp::toggleBottomMotors, this));
 	mParams->addButton("Toggle Center Motors", std::bind(&IRSAWApp::toggleCenterMotors, this));
 	mParams->addSeparator();
-	mParams->addParam("Toggle Top Right Motor", &isTROn);
-	mParams->addParam("Toggle Top Center Motor", &isTCOn);
-	mParams->addParam("Toggle Top Left Motor", &isTLOn);
+	mParams->addParam("Top Right Motor Connected", &isTROn);
+	mParams->addParam("Center Motor Connected", &isTCOn);
+	mParams->addParam("Top Left Motor Connected", &isTLOn);
 	mParams->addSeparator();
-	mParams->addParam("Toggle Middle Right Motor", &isMROn);
-	mParams->addParam("Toggle Middle Center Motor", &isMCOn);
-	mParams->addParam("Toggle Middle Left Motor", &isMLOn);
+	mParams->addParam("Middle Right Motor Connected", &isMROn);
+	mParams->addParam("Middle Center Motor Connected", &isMCOn);
+	mParams->addParam("Middle Left Motor Connected", &isMLOn);
 	mParams->addSeparator();
-	mParams->addParam("Toggle Bottom Right Motor", &isBROn);
-	mParams->addParam("Toggle Bottom Left Motor", &isBLOn);
+	mParams->addParam("Bottom Right Motor Connected", &isBROn);
+	mParams->addParam("Bottom Left Motor Connected", &isBLOn);
 
 
 
