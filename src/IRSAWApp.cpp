@@ -457,16 +457,16 @@ void IRSAWApp::setup()
 	mParams->addButton("Toggle Bottom Motors", std::bind(&IRSAWApp::toggleBottomMotors, this));
 	mParams->addButton("Toggle Center Motors", std::bind(&IRSAWApp::toggleCenterMotors, this));
 	mParams->addSeparator();
-	mParams->addParam("Top Right Motor Connected", &isTROn);
-	mParams->addParam("Center Motor Connected", &isTCOn);
-	mParams->addParam("Top Left Motor Connected", &isTLOn);
+	mParams->addParam("Top Right Curie Connected", &isTROn);
+	mParams->addParam("Center Curie Connected", &isTCOn);
+	mParams->addParam("Top Left Curie Connected", &isTLOn);
 	mParams->addSeparator();
-	mParams->addParam("Middle Right Motor Connected", &isMROn);
-	mParams->addParam("Middle Center Motor Connected", &isMCOn);
-	mParams->addParam("Middle Left Motor Connected", &isMLOn);
+	mParams->addParam("Middle Right Curie Connected", &isMROn);
+	mParams->addParam("Middle Center Curie Connected", &isMCOn);
+	mParams->addParam("Middle Left Curie Connected", &isMLOn);
 	mParams->addSeparator();
-	mParams->addParam("Bottom Right Motor Connected", &isBROn);
-	mParams->addParam("Bottom Left Motor Connected", &isBLOn);
+	mParams->addParam("Bottom Right Curie Connected", &isBROn);
+	mParams->addParam("Bottom Left Curie Connected", &isBLOn);
 
 
 
@@ -485,9 +485,9 @@ void IRSAWApp::setup()
 
 
 	//Initial detection Threshold is 2000mm
-	topDetectionThreshold = 1500;
-	middleDetectionThreshold = 1500;
-	bottomDetectionThreshold = 1500;
+	topDetectionThreshold = 2000;
+	middleDetectionThreshold = 2000;
+	bottomDetectionThreshold = 2000;
 
 	//Initialize Bluetooth
 
@@ -602,6 +602,7 @@ void IRSAWApp::update()
 	// OPENCV MAGIC BEGINS HERE 
 	// Assign a Mat header to depth data array
 	src = Mat(cvSize(mDepthW, mDepthH), CV_16UC1, depth);
+	//cv::flip(src, src, 1);
 
 	//element is used to specify the kernel size for the erode function. changing the kernel size  will alter the result of erosion
 	element = getStructuringElement(MORPH_RECT, Size(3, 3), Point(-1, -1));
@@ -1135,7 +1136,9 @@ void IRSAWApp::draw()
 			gl::translate(mDepthH / 2, mDepthW / 2);
 			gl::rotate(M_PI*0.5); //in radians
 			gl::translate(-mDepthW / 2, -mDepthH / 2);
+
 			gl::color(ColorA(1, 1, 1, 1));
+
 			gl::draw(mDepthTex);
 			gl::popMatrices();
 		}
