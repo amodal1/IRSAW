@@ -538,7 +538,10 @@ void IRSAWApp::update()
 				q++;
 			}
 		}
-		mDepthTex = gl::Texture2d::create(mDepthChannel); /// see what has changed in new cinder
+//		gl::Texture2dRef mDepthTexFlip = gl::Texture2d::create(mDepthChannel); /// see what has changed in new cinder
+		mDepthTex = gl::Texture2d::create(mDepthChannel);
+//		cv::flip(mDepthTexFlip, mDepthTex, 1);
+
 		
 	}
 
@@ -913,199 +916,6 @@ void IRSAWApp::update()
 	cdv8 = (char)clampedPixel8;
 
 
-	//Accept Curie Connections 
-
-
-	//Send signals to the Curies
-
-	//sending type of vibration signal to the motors
-
-	//Update this for BLUETOOTH 
-	
-	/*if (!isPulsingOnSent)
-	{
-		isPulsingOnSent = true;
-		if (isPulsingOn)
-		{
-			s = client_socket[TLPos];
-			getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-			send(s, &pulsingOn, 1, 0);
-
-			s = client_socket[TCPos];
-			getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-			send(s, &pulsingOn, 1, 0);
-
-			s = client_socket[TRPos];
-			getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-			send(s, &pulsingOn, 1, 0);
-
-			s = client_socket[MLPos];
-			getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-			send(s, &pulsingOn, 1, 0);
-
-			s = client_socket[MCPos];
-			getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-			send(s, &pulsingOn, 1, 0);
-
-			s = client_socket[MRPos];
-			getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-			send(s, &pulsingOn, 1, 0);
-
-			s = client_socket[BLPos];
-			getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-			send(s, &pulsingOn, 1, 0);
-
-			s = client_socket[BRPos];
-			getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-			send(s, &pulsingOn, 1, 0);
-		}
-		else
-		{
-			s = client_socket[TLPos];
-			getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-			send(s, &gradualOn, 1, 0);
-
-			s = client_socket[TCPos];
-			getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-			send(s, &gradualOn, 1, 0);
-
-			s = client_socket[TRPos];
-			getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-			send(s, &gradualOn, 1, 0);
-
-			s = client_socket[MLPos];
-			getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-			send(s, &gradualOn, 1, 0);
-
-			s = client_socket[MCPos];
-			getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-			send(s, &gradualOn, 1, 0);
-
-			s = client_socket[MRPos];
-			getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-			send(s, &gradualOn, 1, 0);
-
-			s = client_socket[BLPos];
-			getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-			send(s, &gradualOn, 1, 0);
-
-			s = client_socket[BRPos];
-			getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-			send(s, &gradualOn, 1, 0);
-		} 
-	}
-
-	//for top left
-	if (closestDepthValue1 > 500 && closestDepthValue1 <= topDetectionThreshold  && isTLOn)
-	{
-		s = client_socket[TLPos];
-		getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-		send(s, &cdv1, 1, 0);
-	}
-	else
-	{
-		s = client_socket[TLPos];
-		getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-		send(s, &zero, 1, 0);
-	}
-
-	//for top center
-	if (closestDepthValue7 > 500 && closestDepthValue7 <= topDetectionThreshold && isTCOn)
-	{
-		s = client_socket[TCPos];
-		getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-		send(s, &cdv7, 1, 0);
-	}
-	else
-	{
-		s = client_socket[TCPos];
-		getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-		send(s, &zero, 1, 0);
-	}
-
-	//for top right
-	if (closestDepthValue2 > 500 && closestDepthValue2 <= topDetectionThreshold && isTROn)
-	{
-		s = client_socket[TRPos];
-		getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-		send(s, &cdv2, 1, 0);
-	}
-	else
-	{
-		s = client_socket[TRPos];
-		getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-		send(s, &zero, 1, 0);
-	}
-
-	//for middle left
-	if (closestDepthValue3 > 500 && closestDepthValue3 <= middleDetectionThreshold && isMLOn)
-	{
-		s = client_socket[MLPos];
-		getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-		send(s, &cdv3, 1, 0);
-	}
-	else
-	{
-		s = client_socket[MLPos];
-		getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-		send(s, &zero, 1, 0);
-	}
-
-	//for middle right
-	if (closestDepthValue4 > 500 && closestDepthValue4 <= middleDetectionThreshold && isMROn)
-	{
-		s = client_socket[MRPos];
-		getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-		send(s, &cdv4, 1, 0);
-	}
-	else
-	{
-		s = client_socket[MRPos];
-		getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-		send(s, &zero, 1, 0);
-	}
-
-	//for middle center
-	if (closestDepthValue8 > 500 && closestDepthValue8 <= middleDetectionThreshold && isMCOn)
-	{
-		s = client_socket[MCPos];
-		getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-		send(s, &cdv8, 1, 0);
-	}
-	else
-	{
-		s = client_socket[MCPos];
-		getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-		send(s, &zero, 1, 0);
-	}
-
-	//for bottom left
-	if (closestDepthValue5 > 500 && closestDepthValue5 <= bottomDetectionThreshold && isBLOn)
-	{
-		s = client_socket[BLPos];
-		getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-		send(s, &cdv5, 1, 0);
-	}
-	else
-	{
-		s = client_socket[BLPos];
-		getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-		send(s, &zero, 1, 0);
-	}
-
-	//for bottom right
-	if (closestDepthValue6 > 500 && closestDepthValue6 <= bottomDetectionThreshold && isBROn)
-	{
-		s = client_socket[BRPos];
-		getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-		send(s, &cdv6, 1, 0);
-	}
-	else
-	{
-		s = client_socket[BRPos];
-		getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
-		send(s, &zero, 1, 0);
-	}*/
 }
 
 void IRSAWApp::draw()
@@ -1137,59 +947,74 @@ void IRSAWApp::draw()
 			gl::rotate(M_PI*0.5); //in radians
 			gl::translate(-mDepthW / 2, -mDepthH / 2);
 
+			//Mirror the image from the camera for display
+			gl::translate(0, mDepthH/2);
+			gl::scale(1,-1,1);
 			gl::color(ColorA(1, 1, 1, 1));
-
+			gl::translate(0, -mDepthH/2);
 			gl::draw(mDepthTex);
 			gl::popMatrices();
+
+
 		}
 		else // displaying depth buffer for horizontal camera configuration
 		{
+			//Mirror the image from the camera for display
+			gl::pushMatrices();
+			gl::translate(0, mDepthH/2);
+			gl::scale(1,-1, 1);
+			gl::translate(0, -mDepthH/2);
+
 			gl::color(ColorA(1, 1, 1, 1));
 			gl::draw(mDepthTex);
+			gl::popMatrices();
 		}
 
 
-		// draw rectangles for sections
+		// draw rectangles for section
 
 		// color change gradient from blue to red
-		gl::color(ColorA(map(closestDepthValue1, topDetectionThreshold, 501, 0, 1), 0, 1.0f - map(closestDepthValue1, topDetectionThreshold, 501, 0, 1), 0.5f));
+		gl::color(ColorA(map(closestDepthValue2, topDetectionThreshold, 501, 0, 1), 0, 1.0f - map(closestDepthValue2, topDetectionThreshold, 501, 0, 1), 0.5f));
 		gl::drawSolidRect(TLzone);
 
 		gl::color(ColorA(map(closestDepthValue7, topDetectionThreshold, 501, 0, 1), 0, 1.0f - map(closestDepthValue7, topDetectionThreshold, 501, 0, 1), 0.5f));
 		gl::drawSolidRect(TCzone);
 
-		gl::color(ColorA(map(closestDepthValue2, topDetectionThreshold, 501, 0, 1), 0, 1.0f - map(closestDepthValue2, topDetectionThreshold, 501, 0, 1), 0.5f));
+		gl::color(ColorA(map(closestDepthValue1, topDetectionThreshold, 501, 0, 1), 0, 1.0f - map(closestDepthValue1, topDetectionThreshold, 501, 0, 1), 0.5f));
 		gl::drawSolidRect(TRzone);
 
-		gl::color(ColorA(map(closestDepthValue3, middleDetectionThreshold, 501, 0, 1), 0, 1.0f - map(closestDepthValue3, middleDetectionThreshold, 501, 0, 1), 0.5f));
+		gl::color(ColorA(map(closestDepthValue4, middleDetectionThreshold, 501, 0, 1), 0, 1.0f - map(closestDepthValue4, middleDetectionThreshold, 501, 0, 1), 0.5f));
 		gl::drawSolidRect(MLzone);
 
 		gl::color(ColorA(map(closestDepthValue8, middleDetectionThreshold, 501, 0, 1), 0, 1.0f - map(closestDepthValue8, middleDetectionThreshold, 501, 0, 1), 0.5f));
 		gl::drawSolidRect(MCzone);
 
-		gl::color(ColorA(map(closestDepthValue4, middleDetectionThreshold, 501, 0, 1), 0, 1.0f - map(closestDepthValue4, middleDetectionThreshold, 501, 0, 1), 0.5f));
+		gl::color(ColorA(map(closestDepthValue3, middleDetectionThreshold, 501, 0, 1), 0, 1.0f - map(closestDepthValue3, middleDetectionThreshold, 501, 0, 1), 0.5f));
 		gl::drawSolidRect(MRzone);
 
-		gl::color(ColorA(map(closestDepthValue5, bottomDetectionThreshold, 501, 0, 1), 0, 1.0f - map(closestDepthValue5, bottomDetectionThreshold, 501, 0, 1), 0.5f));
+		gl::color(ColorA(map(closestDepthValue6, bottomDetectionThreshold, 501, 0, 1), 0, 1.0f - map(closestDepthValue6, bottomDetectionThreshold, 501, 0, 1), 0.5f));
 		gl::drawSolidRect(BLzone);
 
-		gl::color(ColorA(map(closestDepthValue6, bottomDetectionThreshold, 501, 0, 1), 0, 1.0f - map(closestDepthValue6, bottomDetectionThreshold, 501, 0, 1), 0.5f));
+		gl::color(ColorA(map(closestDepthValue5, bottomDetectionThreshold, 501, 0, 1), 0, 1.0f - map(closestDepthValue5, bottomDetectionThreshold, 501, 0, 1), 0.5f));
 		gl::drawSolidRect(BRzone);
 
 		// draw stroked rectangles representing borders
 		gl::color(ColorA(1.0f, 1.0f, 1.0f, 1.0f));
-		gl::drawStrokedRect(TLzone);
-		gl::drawStrokedRect(TCzone);
 		gl::drawStrokedRect(TRzone);
-		gl::drawStrokedRect(MLzone);
-		gl::drawStrokedRect(MCzone);
+		gl::drawStrokedRect(TCzone);
+		gl::drawStrokedRect(TLzone);
 		gl::drawStrokedRect(MRzone);
-		gl::drawStrokedRect(BLzone);
+		gl::drawStrokedRect(MCzone);
+		gl::drawStrokedRect(MLzone);
 		gl::drawStrokedRect(BRzone);
-	}
+		gl::drawStrokedRect(BLzone);
 
+
+	}
+	
 	//Draw the params on the screen
 	mParams->draw();
+
 
 	gl::disableAlphaBlending();
 }
